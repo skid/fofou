@@ -1,6 +1,6 @@
 /**
-* @package		CrazyOnTap
-* @author		Wayne Venables <wayne@codaris.com>
+* @package	  CrazyOnTap
+* @author		  Wayne Venables <wayne@codaris.com>
 * @copyright	2006 Wayne Venables
 * @license 		http://www.opensource.org/licenses/bsd-license.php 	BSD License
 * @version 		$Id: Delete.object 11 2004-08-31 03:59:33Z wvenable $
@@ -8,321 +8,282 @@
 
 body {
 	background-color:	white;
-	color:				black;
-	padding:			0; /* needed for Opera */
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;    
-	font-size:			12px;
-	margin-left:		1em;
-	margin-top:			1em;
-	margin-right:		1em;	
-	margin-bottom:		0em;
-}
-
-form { margin: 0px; padding: 0px; }
-a:link { color: rgb(0,0,180); }
-a:visited {	color: purple; }
-
-/* To hide things from IE */
-.noIE { _display: none; }
-
-/*******************************************************************************
- * Header, footer, and body table
- ******************************************************************************/
-
-.header div {
-	color: #ffe;
-	margin: 0 0 10 0;
-	border: 0;
-	height: 60px;
-	padding: 0px 5px 0px 5px;
-}
-
-.header h1 {
-	color: #189337;
-	font: small tahoma, "Bitstream Vera Sans", "Trebuchet MS", "Lucida Grande", lucida, helvetica, sans-serif;
-	font-size: 32px;
-	font-weight: bold;
-	text-align: left;
+	color: #666;
+	padding: 0; /* needed for Opera */
 	margin: 0;
+	font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+	font-size: 12px;
+}
+a { color: #1c97c3; }
+a:visited { color: #666; } 
+h1 a{ text-decoration: none; color: #1c97c3; }
+h1 a:visited { color: #1c97c3; }
+
+#wrapper {
+  width: 900px;
+  margin: 0 auto;
+  padding: 5px 0 20px;
+  
+  -moz-border-radius-bottomright: 10px;
+  -webkit-border-bottom-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  -moz-border-radius-bottomleft: 10px;
+  -webkit-border-bottom-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+    
+  -webkit-box-shadow: 1px 1px 10px #999;
+  -moz-box-shadow: 1px 1px 10px #999;
+  box-shadow: 1px 1px 10px #999;
+}
+#login-logout {
+  padding: 0 5px;
+  text-align: right;
+  font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+  font-weight: bold;
+  color: #999999;
+}
+#login-logout a {
+  text-decoration: none;
+  color: #1c97c3;
+}
+#login-logout a:visited {
+  color: #1c97c3;
 }
 
-.header p {
-	color: #AAAAAA;
-	font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;	
-	font-size: 90%;
-	font-weight: bold;
-	text-align: left;
-	padding: 0px 0px 0px 20px;
-	margin: 0;
-	line-height:140%;
+#forum-title{
+  background-color: #fff;
+  padding: 5px 5px;
+  margin: 5px 0 0;
+  font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+  text-transform: capitalize;
+  font-size: 40px;
+  line-height: 40px;
+  font-weight: bold;
+  letter-spacing: normal;
+}
+#tagline {
+  display: block;
+  padding: 5px 0 5px 15px;
+  margin: 0;
+  background-color: #1c97c3;
+  color: #fff;
+  font-family: Georgia;
+  font-size: 16px;
+}
+#tagline a{
+  text-decoration: none;
+  color: #fff;
+}
+#forum-search{
+  display: block;
+  margin: 5px 0 0;
+  padding: 0 5px;
+  text-align: right;
+}
+#forum-search #search{
+  border: solid 1px #ccc;
+  height: 20px;
+  line-height: 20px;
+  font-size: 13px;
+  padding: 0 5px;
 }
 
-.header a {
-	color: #101060 !important;
-	text-decoration: none;
+#main-content{
+  width: 900px;
+  margin-top: 5px;
+}
+#sidebar{
+  float: left;
+  width: 100px;
+  padding: 5px;
+}
+#navigation {
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+#navigation a {
+  font-size: 13px;
+  font-weight: bold;
+  display: block;
+  padding: 5px;
+  background-color: #efefef;
+
+}
+#content {
+  float: left;
+  width: 775px;
+  padding: 0 5px;
 }
 
-td.contents {
-	padding-top: 5px;
-	font-size: 1.25em;
-	vertical-align: top;
-	width: 600px;
+#topics, #posts, #forums { margin-top: 5px; }
+.button, button{
+  font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border: solid 1px #999;
+  background-color: #efefef;
+  text-decoration: none !important;
+  color: #999;
+  padding: 3px 5px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+}
+.button u{
+  text-decoration: none !important;
+}
+.button:visited{
+  color: #999;
 }
 
-td.sidebar {
-	width: 125px;
-	vertical-align: top;
-	font-size: 10px;
-	font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;	
-	color: rgb(102, 102, 102);
+.meta {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  padding: 5px;
+  width: 125px;
+  background: #f9f9f9;
+  color: #999;
+  -moz-border-radius-topleft: 5px;
+  -moz-border-radius-bottomleft: 5px;
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-bottom-left-radius: 5px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+  font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+  line-height: 18px;
+  font-size: 13px;
+  font-style: oblique;
 }
-
-div.footer {
-	font-family: "Lucida Grande", "Lucida Sans Unicode", sans-serif;	
-	border-top: 1px solid #189337; width: 735px; font-size: 9pt; margin-top: 20px;
-	text-align: center;
+.meta .buttons {
+  position: absolute;
+  bottom: 8px;
+  left: 5px;
 }
-
-
-/*******************************************************************************
- * Form layout
- ******************************************************************************/
-
-div.form {
-	font-family:		Georgia,'Times New Roman',Times,serif;
-	font-weight:		normal;
-	margin-left:		7px; 
-	x-height:			1%;
+.meta .name {
+  color: #1c97c3;
 }
-
-table.form .buttons input {
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-weight:		bold;
-	font-size:			11px;
-	border-top:			1px solid #EEEEEE;
-	border-left:		1px solid #EEEEEE;
-	border-right:		1px solid #333333;
-	border-bottom:		1px solid #333333;
-	background-color:	#CCCCCC;
-	padding:			2px 16px;
-	width:				90px;
+.body {
+  margin: 0 0 0 135px;
+  padding: 10px 15px;
+  color: #666;
+  -moz-border-radius-topright: 5px;
+  -moz-border-radius-bottomright: 5px;
+  -webkit-border-top-right-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;  
 }
+.body a { color: #1c97c3; }
+.body a:visited{ color: #1c97c3; }
 
-table.form td div {
-	font-size:			11px;
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	color:				#666666;
+div.post{
+  background: #efefef;
+  min-height: 90px;
+  padding: 0;
+  margin-bottom: 10px;
+  position: relative;
+  border: solid 1px #efefef;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
 }
+.locked { background: #ffffbf !important; }
+.deleted { background: #ffbfbf !important; }
 
-table.form th {
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-size:			11px;
-	font-weight:		bold;
-	padding-right:		1.5em;
-	text-align:			left;
-	vertical-align:		top;
-	padding-top:		0.3em;
-	white-space: 		nowrap;
+.post h3{ margin: 0; }
+.post h3 a{
+  margin: 0;
+  padding: 3px 0;
+  display: block;
+  color: #1C97C3;
+  font-family: Georgia;
+  font-size: 20px;
+  font-weight: normal;
 }
-
-table.form td {
-	padding-bottom:		.5ex;
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-size:			11px;
+.post h3 a:visited { color: #999999; }
+.post p{ 
+  margin: 5px 0; 
+  font-family: Georgia;
+  font-size: 14px;
 }
-
-table.form td.text {
-	padding-bottom:		.5ex;
-	font-size:			11px;
-	font-family:		Monaco,'Courier New',Courier,monospace;
-}
-
-table.form input {
-	font-size:			11px;
-	font-family:		Monaco,'Courier New',Courier,monospace;
-}
-
-table.form textarea {
-	font-size:			11px;
-	font-family:		Monaco,'Courier New',Courier,monospace;
-}
-
-table.form input.error, textarea.error {
-	font-size:			11px;
-	font-family:		Monaco,'Courier New',Courier,monospace;
-	border:				1px solid #FF0000;
-	padding-right:		1px;
-	padding-left:		1px;
-	padding-bottom:		1px;
-	padding-top:		1px;
-}
-
-span.formCheckBoxPair {	float: left;  }
-span.formCheckBoxPair input { float: left; }
-span.formCheckBoxPair label { float: left; margin-top: 3px;	_margin-top: 4px; color: #000000; }
-
-.errorLabel {
-	font-size:			11px;
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-weight:		bold;
-	color:				#FF0000;
-	vertical-align:		top;
-}
-
-/*******************************************************************************
- * Topics layout
- ******************************************************************************/
-
-div.topics {
-	font-family:		Georgia,'Times New Roman',Times,serif;
-	font-weight:		normal;
-	margin-left:		7px; 
-	x-height:			1%;
-}
-
-div.topics span { color: rgb(170, 170, 170); }
-div.topics a { text-decoration: none; }
-div.topics a:hover { text-decoration: underline; }
-div.topics a.deleted { text-decoration: line-through; }
-div.topics a.deleted:hover { text-decoration: line-through underline; }
-div.topics .dateline {
-	/*height: 8px;*/
-	border-bottom: 1px solid #DDDDDD;
-	width: 300px;
-	height: 1px;
-	font-size: 0px;
-}
-div.topics .date {
-	color: black;
-	font-weight: bold;
-	padding-top: 0.4em;
-	border-bottom: 1px solid black;
-	width: 300px;
-}
-
-/*******************************************************************************
- * Posts layout
- ******************************************************************************/
-
-div.posts {
-	font-family:		Georgia,'Times New Roman',Times,serif;
-	font-weight:		normal;
-	margin-left:		7px; 
-}
-
-div.posts div.post {
-	width: 30em;
-	padding-top: 1em;
-}
-
-div.posts div.deleted {
-	text-decoration: line-through;
-}
-
-
-div.posts div.signature {
-	padding-top: 1em;
-	text-align: right;
-	font-style: italic;
-	width: 30em;
-}
-
-div.posts div.signature img {
-	padding: 0px;
-	margin: 0px;
-	padding-top: 2px;
-}
-
-div.posts div.info {
-	padding-top: 		1.8em;
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-size:			10px;
-	float: left;
-}
-
-
-/*******************************************************************************
- * General layout
- ******************************************************************************/
-
 h2 {
-	font-size:			18px;
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-weight:		bold;
-	color:				#189337;
-	width:				100%;
-	margin-top:			0px;
+  font-family: Georgia; 
+  color: #999;
+  font-size: 30px;
+  line-height: 30px;
+  margin: 0 0 15px;
+  padding: 0;
+  font-weight: normal;
 }
-
-h3 {
-	font-size:			18px;
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-weight:		bold;
-	margin:				0px;
-	padding:			0px 0px 0px 0px;
-	width:				400px;
-}
-
-div.buttons { margin: 1em 0 2px 0; clear: all; }
-div.buttons a {
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-size:			11px;
-	font-weight:		bold;
-	text-decoration:	none;
-	border-top:			1px solid #EEE;
-	border-left:		1px solid #EEE;
-	border-right:		1px solid #333;
-	border-bottom:		1px solid #333;
-	background-color:	#DDD;
-	color:				rgb(0,0,180);
-	padding:			2px 4px;
-	margin-top:			0ex;	
-	margin-bottom:		0ex;
-	margin-right:		1ex;
-	margin-left:		0ex;
-}
-div.buttons a:visited { color: rgb(0,0,180); }
-div.buttons a img { vertical-align: text-top; }
-
-
-/*******************************************************************************
- * Search box
- ******************************************************************************/
-
-div.searchBox {
-	float:				right;
-	margin-left:		7px; 
-	font-size:			11px;
-	font-weight:		bold;
-	text-decoration:	none; 
-	background-color:	#189337; 
-	color:				#FFFFFF; 
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	padding:			3px 1px 2px 5px;
-	border-right:		1px solid #0F5675;
-	border-bottom:		1px solid #0F5675;
-}
-
-div.searchBox input.button {
-	font-family:		Tahoma,Arial,Helvetica,sans-serif;
-	font-weight:		bold;
-	font-size:			11px;
-	border-top:			1px solid #EEEEEE;
-	border-left:		1px solid #EEEEEE;
-	border-right:		1px solid #333333;
-	border-bottom:		1px solid #333333;
-	background-color:	#CCCCCC;
-	padding:			2px 2px;
-	width:				30px;
-	margin-left:		4px; 
-}
-
-#tbTop {
-	text-align:right;
-}
-
-div.manageforumsmsg {
-  color: #ff0000;
+.comments-count { line-height: 150%; }
+span.ip{
+  position: absolute;
+  display: block;
   text-align: center;
+  padding: 1px;
+  font-weight:normal;
+  font-family: monospace;
+  left: 5px;
+  right: 5px;
+  bottom: 30px;
 }
 
+#buttons {
+  padding-top: 5px;
+  margin: 10px 0 10px;
+  text-align: right;
+}
+
+form.visible {
+  display: block;
+  width: 765px;
+  margin: 10px 0;
+  padding: 0px;
+}
+.field {
+  margin: 10px 0;
+  width: 775px;
+}
+label {
+  display: block;
+  padding: 0;
+  font-weight:bold;
+  color: #999;
+  font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+  font-size: 13px;
+}
+label small {
+  font-weight: normal;
+}
+label .error { color: red; margin: 0; }
+
+.field input.text{
+  border: solid 1px #ccc;
+  height: 25px;
+  line-height: 25px;
+  font-size: 14px;
+  padding: 0;
+  text-indent: 5px;
+  width: 100%;
+  margin:3px 0 0;
+  font-family: 'Trebuchet MS', Helvetica, Jamrul, sans-serif;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+.field textarea{
+  border: solid 1px #ccc;
+  font-size: 12px;
+  padding: 0;
+  width: 769px;
+  margin-top:3px;
+  font-family: monospace;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  padding: 3px;
+}
+.field label.error { color: red; }

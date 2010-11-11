@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Lucca-mk forums{% endblock %}
+{% block heading %}Lucca-mk forums{% endblock %}
+{% block tagline %}Check out the following forums{% endblock %}
+
+{% block content %}
+<div id="forums">
+  {% if not forums %}
+    <div class="forum">You haven't created any forums yet.</div>
+	{% else %}
+		{% for f in forums %}
+		  {% if isadmin or not f.is_disabled %}
+  			<div class="post forum{% if f.is_disabled %} deleted{% endif %}">
+  			  <div class='meta'>
+  			    <strong>{{f.num_topics}}</strong> topic{{f.num_topics|pluralize}} <br />
+  			    <strong>{{f.num_posts}}</strong> comment{{f.num_posts|pluralize}}
+  			    {% if isadmin %}
+              <div class='buttons'>
+                <a class="button" href="?forum_key={{f.key}}&amp;{{ f.enable_url }}">{{ f.enable_txt }}</a>
+      				  {% ifnotequal f.key forum.key %}
+        				  <a class="button" href="/manageforums?forum_key={{ f.key }}">edit</a>
+        				{% endifnotequal %}
+        			</div>
+      			{% endif %}
+  			  </div>
+  			  <div class='body'>
+    			  <h3><a href="{{ f.url }}?p={{f.num_posts}}">{{ f.title|default:f.url }}</a></h3>
+    			  <p>{{ f.tagline }}</p>
+      		</div>
+      		<div style="clear:both"></div>
+  			</div>
+  		{% endif %}
+		{% endfor %}
+  {% endif %}
+  {% if isadmin %}
+		<form class="visible" action="/manageforums" method="post">
+		  {% if forum_key %}
+  	    <h2>Update Forum</h2>
+  	  {% else %}
+  	    <h2>Create Forum</h2>
+  	  {% endif %}
+		  <div class="field">
+		    <label for="urlFieldId">URL ({{ hosturl }}/{{ forum.url }}) <span class="error">{{ errmsg }}</span></label>
+		    <input class="text" type="edit" size="60" maxlength="60" name="url" id="urlFieldId" value="{{ forum.url|escape }}">
+		  </div>
+		  <div class="field">
+		    <label for="titleFieldId">Title</label>
+		    <input type="edit" class="text" size="60" maxlength="128" name="title" id="titleFieldId" value="{{ forum.title|escape }}">
+		  </div>
+		  <div class="field">
+		    <label for="taglineFieldId">Tagline</label>
+		    <input type="edit" class="text" size="60" maxlength="256" name="tagline" id="taglineFieldId" value="{{ forum.tagline|escape }}">
+		  </div>
+		  <div class="field">
+		    <label for="analyticscodeFieldId">Analytics code</label>
+		    <input type="edit" class="text" size="60" maxlength="256" id="analyticscodeFieldId" name="analyticscode" value="{{ forum.analytics_code|escape }}">
+		  </div>
+		  <div class="field">
+		    <label for="sidebarFieldId">Sidebar</label>
+		    <textarea name="sidebar" rows="6" id="sidebarFieldId">{{ forum.sidebar|escape }}</textarea>
+		  </div>
+		  <div class="field" style="text-align:right">
+				{% if forum.key %}
+					<input type="hidden" value="{{ forum.key }}" name="forum_key">
+					<button type="submit">Update forum</button>
+				{% else %}
+					<button type="submit">Create forum</button>
+				{% endif %}  			    
+		  </div>
+		</form>
+  {% endif %}
+</div>
+{% endblock %}

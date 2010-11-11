@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+	<title>{% block title %}{{ forum.title|default:forum.url }}{% endblock %}</title>
+	<link href="/static/default.css" rel="stylesheet" type="text/css" >
+	{% block extrahead %}{% endblock %}
+</head>
+<body>
+<div id="wrapper">
+  <div id="login-logout">
+    {% if user %}
+      Welcome {% if isadmin %}admin{% endif %}, {{user.nickname}} <a href="{{logout_url}}">[Log Out]</a>
+    {% else %}
+      <a href="{{login_url}}">[Login / Register]</a>
+    {% endif %}
+    {% if isadmin %}
+      <a href="/managesettings">[Forum Settings]</a>
+    {% endif %}
+  </div>
+  
+  <h1 id="forum-title"><a href="/">Lucca-Mk Forums</a></h1>
+  <p id="tagline">{% block tagline %}<a href="{{forum.root}}">{{ forum.title|default:forum.url }}</a>{% endblock %}</p>
+  
+  <form method="get" action="http://google.com/search">
+		<input type="hidden" name="IncludeBlogs" value="1"><input type="hidden" name="as_sitesearch" value="{{ siteurl }}">
+		<div id="forum-search" style="display:none">
+		  <input name="q" id="search" value="search" type="text">
+		  <input class="button" value="Go" type="submit">
+		</div>
+	</form>
+	
+  <div id="main-content">
+    <div id="sidebar">
+      <div style="text-align:center; margin: 0">
+        <a style="text-decoration:none" href="/">
+          <img alt="Lucca Leadership" style="width:50px; border:none" title="Lucca Leadership" src="/static/logo.jpg"><br>
+        </a>
+      </div>
+      <div id="navigation">
+      </div>
+  		{{ forum.sidebar }}
+  		<div style="margin:10px 0"></div>
+  	</div>
+  	<div id="content">
+  	  {% block content %}{% endblock %}
+  	</div>
+  	<div style="clear:both"></div>
+  </div>
+</div>
+
+{% if analytics_code %}
+<script type="text/javascript">
+  var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+  document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+  var pageTracker = _gat._getTracker("{{ analytics_code }}");
+  pageTracker._initData();
+  pageTracker._trackPageview();
+</script>
+{% endif %}
+</body>
+</html>

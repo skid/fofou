@@ -8,27 +8,16 @@ sure you'll have no trouble coming up with your own list of possible
 improvements.
 
 TODO must have:
- - cookies for anonymous users seem te be messed up (or I'm filling out
-   post form based on a wrong cookie). When not logged in, replying
-   to a post fills out user info based on the orignal poster, not the
-   person who's replying
+ - Stickies
+ - Email users
+ - Rss
+ - Anti-spam protection
+ - Search
+ - Simple image posting
+ - Use memcached
 
 TODO nice to have:
- - comment count should only count non-deleted posts
- - ip address blocking
- - mass delete of posts from a given ip address and/or user account
- - use ajax google search ui 
- - finish /<forumurl>/email?post_id=<post_id>
- - admin features like blocking users (ip address, cookie, user_id)
-   and not adding if a Post with this body_sha1 already exists
- - better anti-spam protection (akismet? captcha?)
-
-TODO low priority:
- - more templates and ability to choose a template in /manageforums
- - /rsscombined - all posts for all forums, for forum admins mostly
- - cache main page in memcached, similar to rss feeds
- - cookie validation
- - alternative forms of integration with a website (iframe? return data
-   as json and do most of the rendering using javascript?)
- - document importing posts from fruitshow database
-
+ - Textile formatting of posts
+ - Mass delete of posts from a given ip address and/or user account
+ - Use ajax google search ui
+ - Better code comments

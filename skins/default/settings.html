@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Lucca-mk forums{% endblock %}
+{% block heading %}Lucca-mk forums{% endblock %}
+{% block tagline %}Forum settings{% endblock %}
+
+{% block content %}
+<div id="forums">
+  {% if isadmin %}
+		<form class="visible" action="" method="post">
+		  <h2>Forum Settings</h2>
+		  <div class="field">
+		    <label for="banned_ips">
+		      Banned IPs
+		      <small>Ip addresses listed here will be restricted. Put one IP on each line</small>
+		    </label>
+		    <textarea name="banned_ips" rows="6" id="banned_ips">{{ settings.banned_ips }}</textarea>
+		  </div>
+		  <div class="field">
+		    <label for="email_whitelist">
+		      Email Whitelist
+		      <small>
+		        Only emails listed here will be allowed access. Put one email on each line. Leave empty to ignore.<br />
+		        <strong>Using a whitelist will require users to be logged in with their google accounts!</strong>
+		      </small>
+		    </label>
+		    <textarea name="email_whitelist" rows="6" id="email_whitelist">{{ settings.email_whitelist }}</textarea>
+		  </div>
+		  <div class="field">
+		    <label for="email_blacklist">
+		      Email Blacklist
+		      <small>
+		        Emails listed here will be restricted. Put one email on each line.<br />
+		        <strong>Using a blacklist will require users to be logged in with their google accounts!</strong>
+		      </small>
+		    </label>
+		    <textarea name="email_blacklist" rows="6" id="email_blacklist">{{ settings.email_blacklist }}</textarea>
+		  </div>
+		  <div class="field" style="text-align:right">
+        <button type="submit">Save Settings</button>
+		  </div>
+		</form>
+  {% endif %}
+</div>
+{% endblock %}
