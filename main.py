@@ -1,6 +1,6 @@
 # This code is in Public Domain. Take all the code you want, we'll just write more.
 
-import Cookie, StringIO, os, re, string, sha, time, random, cgi, urllib, datetime, pickle, logging
+import StringIO, re, string, sha, time, random, cgi, urllib, datetime, pickle, logging
 import wsgiref.handlers
 
 from google.appengine.api import users
@@ -18,14 +18,17 @@ DEBUG = False
 
 HTTP_NOT_ACCEPTABLE = 406
 HTTP_NOT_FOUND = 404
+HTTP_DATE_FMT = "%a, %d %b %Y %H:%M:%S GMT"
 
 # Cookie code based on http://code.google.com/p/appengine-utitlies/source/browse/trunk/utilities/session.py
 FOFOU_COOKIE = "fofou-uid"
 
 # Valid for 120 days
-COOKIE_EXPIRE_TIME = 60*60*24*120
+COOKIE_EXPIRE_TIME = 120
 
-RE_VALID_URL = re.compile(r'^[A-Za-z0-9]+([_\-]?[A-Za-z0-9]+)*$')
+SKINS = ["default"]
+BANNED_IPS = { }
+RE_VALID_URL = re.compile(r'^[a-z0-9]+([_\-]?[a-z0-9]+)*$')
 
 def to_unicode(val):
   if isinstance(val, unicode): 
@@ -48,20 +51,23 @@ class FofouBase(webapp.RequestHandler):
     self.settings = FofouSettings.load()
   
   def template_out(self, template_path, template_values):
-    self.response.headers["Set-Cookie"] = str(self.cookie).split(": ", 1)[1]
+    # just a dummy call to to the function
+    self.get_cooke()
     self.response.headers['Content-Type'] = 'text/html'
     self.response.out.write( template.render(template_path, template_values) )
 
   def get_cooke(self):
-    if not self._cookie:
-      cookies = Cookie.SimpleCookie()
-      cookies.load( os.environ.get('HTTP_COOKIE', '' ) )
-      if (FOFOU_COOKIE not in cookies):
-        cookies[FOFOU_COOKIE] = sha.new( repr( time.time() ) ).hexdigest()
-        cookies[FOFOU_COOKIE]['path'] = '/'
-        cookies[FOFOU_COOKIE]['expires'] = COOKIE_EXPIRE_TIME
-      self._cookie = cookies[FOFOU_COOKIE]
+    if self._cookie:
+      return self._cookie
 
+    try:
+      fid = self.request.cookies[FOFOU_COOKIE]
+    except KeyError:
+      fid = sha.new(repr(time.time())).hexdigest()
+      expires = datetime.datetime.now() + datetime.timedelta(COOKIE_EXPIRE_TIME)
+      self.response.headers['Set-Cookie'] = '%s=%s; expires=%s; path=/' % (FOFOU_COOKIE, fid, expires.strftime(HTTP_DATE_FMT))
+
+    self._cookie = fid
     return self._cookie
 
   cookie = property(get_cooke)
@@ -95,8 +101,8 @@ class ManageSettings(FofouBase):
     email_white = self.request.get('email_whitelist', '').strip()
     email_black = self.request.get('email_blacklist', '').strip()
 
-    if os.environ['REMOTE_ADDR'] in banned:
-      banned = banned.replace(os.environ['REMOTE_ADDR'], "")
+    if self.request.remote_addr in banned:
+      banned = banned.replace(self.request.remote_addr, "")
       
     self.settings.email_blacklist = email_black
     self.settings.email_whitelist = email_white
@@ -212,9 +218,9 @@ class DeleteTopic(webapp.RequestHandler):
       return self.redirect(forum.root())
 
     topic = post.topic
-    first = Post.gql("WHERE forum=:1 AND topic=:2 ORDER BY created_on", forum, topic).get()
+    first = Post.gql("WHERE topic=:1 ORDER BY created_on", topic).get()
 
-    if not post or post.forum.key() != forum.key():
+    if not post or topic.forum.key() != forum.key():
       return self.redirect(forum.root())
 
     if post.is_deleted:
@@ -271,7 +277,7 @@ class ForumList(FofouBase):
     if is_admin:
       return self.redirect("/manageforums")
     
-    if not self.settings.check_ip(os.environ['REMOTE_ADDR']):
+    if not self.settings.check_ip(self.request.remote_addr):
       return self.response.out.write('Your IP address has been banned')
     
     if not self.settings.check_user( user ):
@@ -298,7 +304,7 @@ class TopicList(FofouBase):
     if not forum or (forum.is_disabled and not is_admin):
       return self.redirect("/")
     
-    if not is_admin and not self.settings.check_ip(os.environ['REMOTE_ADDR']):
+    if not is_admin and not self.settings.check_ip(self.request.remote_addr):
       return self.response.out.write('Your IP address has been banned')
 
     if not is_admin and not self.settings.check_user( user ):
@@ -314,6 +320,7 @@ class TopicList(FofouBase):
       'siteurl': self.request.url,
       'isadmin': is_admin,
       'forum' : forum,
+      'forum_urls': [f.url for f in Forum.all()],
       'topics': topics,
       'offset': offset,
       'login_url': users.create_login_url(forum.root()),
@@ -333,7 +340,7 @@ class Thread(FofouBase):
     if not forum or (forum.is_disabled and not is_admin):
       return self.redirect("/")
     
-    if not is_admin and not self.settings.check_ip(os.environ['REMOTE_ADDR']):
+    if not is_admin and not self.settings.check_ip(self.request.remote_addr):
       return self.response.out.write('Your IP address has been banned')
 
     if not is_admin and not self.settings.check_user( user ):
@@ -354,9 +361,9 @@ class Thread(FofouBase):
     
     # TODO: Make Pagination
     if is_admin:
-      posts = Post.gql("WHERE forum = :1 AND topic = :2 ORDER BY created_on", forum, topic)
+      posts = Post.gql("WHERE topic = :1 ORDER BY created_on", topic)
     else:
-      posts = Post.gql("WHERE forum = :1 AND topic = :2 AND is_deleted = False ORDER BY created_on", forum, topic)
+      posts = Post.gql("WHERE topic = :1 AND is_deleted = False ORDER BY created_on", topic)
     
     tvals = {
       'user': user,
@@ -370,6 +377,35 @@ class Thread(FofouBase):
     }
     self.template_out("skins/default/topic.html", tvals)
 
+# responds to /<forumurl>/move?id=<id>
+class MoveTopic(webapp.RequestHandler):
+
+  def post(self):
+    forum = Forum.from_url(self.request.path_info)
+    is_admin = users.is_current_user_admin()
+
+    # Only admins can move topics
+    if not forum or not is_admin:
+      return self.redirect("/")
+
+    try:
+      forumto = Forum.from_url(self.request.get('forumto'))
+      topic = db.get( db.Key.from_path( 'Topic', int(self.request.get('id')) ) )
+    except ValueError:
+      return self.redirect(forum.root())
+
+    if topic and forumto:
+      topic.forum = forumto
+      topic.put()
+      forum.num_topics -= 1
+      forum.num_posts -= topic.ncomments
+      forum.put()
+      forumto.num_topics += 1
+      forumto.num_posts += topic.ncomments
+      forumto.put()
+
+    return self.redirect(forum.root())
+
 # Responds to /<forumurl>/post[?id=<topic_id>]
 class PostForm(FofouBase):
   def get(self):
@@ -380,7 +416,7 @@ class PostForm(FofouBase):
     if not forum or (forum.is_disabled and not is_admin):
       return self.redirect("/")
     
-    if not is_admin and not self.settings.check_ip(os.environ['REMOTE_ADDR']):
+    if not is_admin and not self.settings.check_ip(self.request.remote_addr):
       return self.response.out.write('Your IP address has been banned')
 
     if not is_admin and not self.settings.check_user( user ):
@@ -390,7 +426,7 @@ class PostForm(FofouBase):
     if user:
       fuser = FofouUser.gql("WHERE user = :1", user).get()
     else: 
-      fuser = FofouUser.gql("WHERE cookie = :1", self.cookie.value ).get()
+      fuser = FofouUser.gql("WHERE cookie = :1", self.cookie ).get()
 
     tvals = {
       'user': user,
@@ -422,7 +458,7 @@ class PostForm(FofouBase):
     if not forum or (forum.is_disabled and not is_admin):
       return self.redirect("/")
 
-    if not is_admin and not self.settings.check_ip(os.environ['REMOTE_ADDR']):
+    if not is_admin and not self.settings.check_ip(self.request.remote_addr):
       return self.response.out.write('Your IP address has been banned')
 
     if not is_admin and not self.settings.check_user( user ):
@@ -482,7 +518,7 @@ class PostForm(FofouBase):
     if user:
       fuser = FofouUser.gql("WHERE user = :1", user).get()
     else: 
-      fuser = FofouUser.gql("WHERE cookie = :1", self.cookie.value).get()
+      fuser = FofouUser.gql("WHERE cookie = :1", self.cookie).get()
 
     if not fuser:
       fuser = FofouUser(
@@ -491,7 +527,7 @@ class PostForm(FofouBase):
         email = email or 'anonymous@example.com', 
         name = name or 'Anonymous', 
         homepage = homepage,
-        cookie = self.cookie.value )
+        cookie = self.cookie )
     else:
       fuser.remember_me = remember
       fuser.email = email or 'anonymous@example.com'
@@ -510,9 +546,8 @@ class PostForm(FofouBase):
     
     post = Post(
       topic = topic, 
-      forum = forum, 
       user = fuser, 
-      user_ip = os.environ['REMOTE_ADDR'], 
+      user_ip = self.request.remote_addr, 
       message = message, 
       sha1_digest = sha1_digest, 
       user_name = fuser.name,
@@ -526,14 +561,13 @@ class PostForm(FofouBase):
     self.redirect( "%stopic?id=%s" % (forum.root(), topic.id) )
 
 if __name__ == "__main__":
-  routes = [
+  wsgiref.handlers.CGIHandler().run( webapp.WSGIApplication( routes, [
     ('/', ForumList),
     ('/manageforums', ManageForums),
     ('/managesettings', ManageSettings),
     ('/[^/]+/delete', DeleteTopic),
     ('/[^/]+/lock', LockTopic),
     ('/[^/]+/post', PostForm),
-    ('/[^/]+/topic', Thread),
-    ('/[^/]+/?', TopicList)
-  ]
-  wsgiref.handlers.CGIHandler().run( webapp.WSGIApplication( routes, debug=DEBUG ) )
+    ('/[^/]+/move', MoveTopic),
+    ('/[^/]+/topic', TopicForm),
+    ('/[^/]+/?', TopicList)], debug=DEBUG))
