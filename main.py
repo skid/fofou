@@ -14,7 +14,7 @@ from django.template import Context, Template
 
 from model import FofouSettings, FofouUser, Forum, Topic, Post
 
-DEBUG = True
+DEBUG = False
 
 HTTP_NOT_ACCEPTABLE = 406
 HTTP_NOT_FOUND = 404
@@ -24,10 +24,6 @@ FOFOU_COOKIE = "fofou-uid"
 
 # Valid for 120 days
 COOKIE_EXPIRE_TIME = 60*60*24*120
-
-SKINS = ["default"]
-
-BANNED_IPS = { }
 
 RE_VALID_URL = re.compile(r'^[A-Za-z0-9]+([_\-]?[A-Za-z0-9]+)*$')
 
@@ -56,23 +52,20 @@ class FofouBase(webapp.RequestHandler):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.out.write( template.render(template_path, template_values) )
 
-  _cookie = None
   def get_cooke(self):
-    if self._cookie:
-      return self._cookie
+    if not self._cookie:
+      cookies = Cookie.SimpleCookie()
+      cookies.load( os.environ.get('HTTP_COOKIE', '' ) )
+      if (FOFOU_COOKIE not in cookies):
+        cookies[FOFOU_COOKIE] = sha.new( repr( time.time() ) ).hexdigest()
+        cookies[FOFOU_COOKIE]['path'] = '/'
+        cookies[FOFOU_COOKIE]['expires'] = COOKIE_EXPIRE_TIME
+      self._cookie = cookies[FOFOU_COOKIE]
 
-    cookies = Cookie.SimpleCookie()
-    cookies.load( os.environ.get('HTTP_COOKIE', '' ) )
-
-    if (FOFOU_COOKIE not in cookies) or len(cookies[FOFOU_COOKIE].value) != 40:
-      cookies[FOFOU_COOKIE] = sha.new( repr( time.time() ) ).hexdigest()
-      cookies[FOFOU_COOKIE]['path'] = '/'
-      cookies[FOFOU_COOKIE]['expires'] = COOKIE_EXPIRE_TIME
-
-    self._cookie = cookies[FOFOU_COOKIE]
     return self._cookie
-  
+
   cookie = property(get_cooke)
+  _cookie = None  
 
 class ManageSettings(FofouBase):
   
@@ -128,7 +121,6 @@ class ManageForums(FofouBase):
       'logout_url': users.create_logout_url("/"),
       'hosturl': self.request.host_url,
       'isadmin': self.admin,
-      'msg': self.request.get('msg'),
       'forums': self.forums,
       'user': self.user
     }
@@ -155,12 +147,10 @@ class ManageForums(FofouBase):
       if self.request.get('disable') or self.request.get('enable'):
         if self.request.get('disable'):
           forum.is_disabled = True
-          msg = "Forum %s has been disabled" % (forum.title or forum.url)
         elif self.request.get('enable'):
           forum.is_disabled = False
-          msg = "Forum %s has been enbled" % (forum.title or forum.url)
         forum.put()
-        return self.redirect("/manageforums?msg=%s" % urllib.quote( to_utf8( msg ) ) )
+        return self.redirect("/manageforums")
     
     self.tvals['forum'] = forum
     return self.template_out(self.tpl, self.tvals)
@@ -204,10 +194,9 @@ class ManageForums(FofouBase):
       )
     
     forum.put()
-    return self.redirect("/manageforums?msg=%s" % urllib.quote( to_utf8( "Forum has been successfully edited/added" ) ) )
+    return self.redirect("/manageforums")
 
-# Responds to GET /postdel?<post_id> and /postundel?<post_id>
-class PostDelUndel(webapp.RequestHandler):
+class DeleteTopic(webapp.RequestHandler):
 
   def get(self):
     forum = Forum.from_url(self.request.path_info)
@@ -216,30 +205,20 @@ class PostDelUndel(webapp.RequestHandler):
     # Only admins can delete or undelete posts
     if not forum or not is_admin:
       return self.redirect("/")
+    
+    try:
+      post = db.get( db.Key.from_path( 'Post', int( self.request.get('id') ) ) )
+    except ValueError:
+      return self.redirect(forum.root())
 
-    post  = db.get( db.Key.from_path( 'Post', int(self.request.query_string) ) )
     topic = post.topic
     first = Post.gql("WHERE forum=:1 AND topic=:2 ORDER BY created_on", forum, topic).get()
 
     if not post or post.forum.key() != forum.key():
       return self.redirect(forum.root())
 
-    if self.request.path.endswith("/postdel") and not post.is_deleted:
-      post.is_deleted = True
-      post.put()
-      if first.key() == post.key():
-        topic.is_deleted = True
-        forum.num_topics -= 1
-        forum.num_posts -= topic.ncomments
-      else:
-        topic.ncomments -= 1
-        forum.num_posts -= 1
-      topic.put()
-      forum.put()
-        
-    elif post.is_deleted:
+    if post.is_deleted:
       post.is_deleted = False
-      post.put()
       if first.key() == post.key():
         topic.is_deleted = False
         forum.num_topics += 1
@@ -248,12 +227,21 @@ class PostDelUndel(webapp.RequestHandler):
         topic.ncomments += 1
         if not topic.is_deleted:
           forum.num_posts += 1
-      forum.put()      
-      topic.put()
-
+    else:
+      post.is_deleted = True
+      if first.key() == post.key():
+        topic.is_deleted = True
+        forum.num_topics -= 1
+        forum.num_posts -= topic.ncomments
+      else:
+        topic.ncomments -= 1
+        forum.num_posts -= 1
+    
+    post.put()
+    topic.put()
+    forum.put()
     return self.redirect( "%stopic?id=%s" % (forum.root(), topic.id) )
 
-# Responds to GET /postdel?<post_id> and /postundel?<post_id>
 class LockTopic(webapp.RequestHandler):
 
   def get(self):
@@ -268,7 +256,6 @@ class LockTopic(webapp.RequestHandler):
       topic = db.get( db.Key.from_path( 'Topic', int(self.request.get('id')) ) )
     except ValueError:
       return self.redirect( forum.root() )
-    
 
     if topic:
       topic.is_locked = not topic.is_locked
@@ -276,7 +263,6 @@ class LockTopic(webapp.RequestHandler):
 
     return self.redirect( forum.root() )
 
-# Responds to /, shows list of available forums or redirects to forum management page if user is admin
 class ForumList(FofouBase):
   def get(self):
     user = users.get_current_user()
@@ -336,8 +322,8 @@ class TopicList(FofouBase):
 
     self.template_out("skins/default/topic_list.html", tvals)
 
-# responds to /<forumurl>/topic?id=<id>
-class TopicForm(FofouBase):
+# A thread of comments on a topic
+class Thread(FofouBase):
 
   def get(self):
     forum = Forum.from_url(self.request.path_info)
@@ -540,13 +526,14 @@ class PostForm(FofouBase):
     self.redirect( "%stopic?id=%s" % (forum.root(), topic.id) )
 
 if __name__ == "__main__":
-  wsgiref.handlers.CGIHandler().run(webapp.WSGIApplication(
-   [('/', ForumList),
+  routes = [
+    ('/', ForumList),
     ('/manageforums', ManageForums),
     ('/managesettings', ManageSettings),
-    ('/[^/]+/postdel', PostDelUndel),
-    ('/[^/]+/postundel', PostDelUndel),
+    ('/[^/]+/delete', DeleteTopic),
     ('/[^/]+/lock', LockTopic),
     ('/[^/]+/post', PostForm),
-    ('/[^/]+/topic', TopicForm),
-    ('/[^/]+/?', TopicList)], debug=DEBUG))
+    ('/[^/]+/topic', Thread),
+    ('/[^/]+/?', TopicList)
+  ]
+  wsgiref.handlers.CGIHandler().run( webapp.WSGIApplication( routes, debug=DEBUG ) )

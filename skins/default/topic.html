@@ -22,9 +22,9 @@
   				<a class="button" href="{{ siteroot }}topic?id={{ topic.id }}#{{ post.id }}" title="Permalink" >permalink</a>
   				{% if isadmin %}
   					{% if post.is_deleted %}
-  						<a class="button" href="{{ siteroot }}postundel?{{ post.id }}" title="Undelete Post">restore</a>
+  						<a class="button" href="{{ siteroot }}delete?id={{ post.id }}" title="Undelete Post">restore</a>
   					{% else %}
-  						<a class="button" href="{{ siteroot }}postdel?{{ post.id }}" title="Delete Post">delete</a>
+  						<a class="button" href="{{ siteroot }}delete?id={{ post.id }}" title="Delete Post">delete</a>
   					{% endif %}
   				{% endif %}
   			</div>
